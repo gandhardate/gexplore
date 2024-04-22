@@ -25,14 +25,14 @@ display_files() {
     done <<< "$files"
 
     # Display the menu
-    dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "More Options" "${choices[@]}"  2> /tmp/choice.txt
+    dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" "${choices[@]}"  2> /tmp/choice.txt
     local currDir = $(pwd)
     # Read the user's choice
     local choice=$(cat /tmp/choice.txt)
     rm -f /tmp/choice.txt
 
     # Handle the choice
-    if [[ "$choice" == "gabout" ]]; then
+    if [[ "$choice" == "m" ]]; then
         cd ..
     elif [[ "$choice" == "q" ]]; then
         clear
