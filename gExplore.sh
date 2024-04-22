@@ -11,6 +11,14 @@ if ! command -v dialog &> /dev/null; then
     fi
 fi
 
+MORE_OPTIONS_FLAG=false
+update_global_flag() {
+     if [ "$MORE_OPTIONS_FLAG" = true ]; then
+        MORE_OPTIONS_FLAG=false
+    else
+        MORE_OPTIONS_FLAG=true
+    fi
+}
 # Function to display current directory contents
 display_files() {
     local choices=()
@@ -25,20 +33,26 @@ display_files() {
     done <<< "$files"
 
     # Display the menu
-    dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" "${choices[@]}"  2> /tmp/choice.txt
-    local currDir = $(pwd)
+    if $MORE_OPTIONS_FLAG; then
+        dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "Toggle More options On/Off" a "about" "${choices[@]}" 2> /tmp/choice.txt
+    else
+        dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "Toggle More options On/Off" "${choices[@]}"  2> /tmp/choice.txt
+    fi
+
     # Read the user's choice
     local choice=$(cat /tmp/choice.txt)
     rm -f /tmp/choice.txt
 
     # Handle the choice
     if [[ "$choice" == "m" ]]; then
-        cd ..
+        update_global_flag
     elif [[ "$choice" == "q" ]]; then
         clear
         echo exited gExplore
-        echo Currently at: $(pwd)
+        echo Last location opened in gexplore: $(pwd)
         exit 0
+    elif [[ "$choice" == "a" ]]; then
+        dialog --msgbox "gExplore v2.0\nGitHub Link: https://github.com/gandhardate/gexplore\nBy Gandhar Date" 10 70
     elif [[ -d "$choice" ]]; then
         cd "$choice"
     elif [[ -f "$choice" ]]; then
