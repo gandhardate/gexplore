@@ -10,9 +10,13 @@ if ! command -v dialog &> /dev/null; then
         exit 1
     fi
 fi
-
+# flag for quitting
+KEEP_EXPLORING=true
+# path of recent directory
+LAST_DIR=""
+# flag to toggle more options
 MORE_OPTIONS_FLAG=false
-update_global_flag() {
+toggle_more_options() {
      if [ "$MORE_OPTIONS_FLAG" = true ]; then
         MORE_OPTIONS_FLAG=false
     else
@@ -34,7 +38,7 @@ display_files() {
 
     # Display the menu
     if $MORE_OPTIONS_FLAG; then
-        dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "Toggle More options On/Off" a "about" "${choices[@]}" 2> /tmp/choice.txt
+        dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "Toggle More options On/Off" a "about" h "help" "${choices[@]}" 2> /tmp/choice.txt
     else
         dialog --no-cancel --menu "gExplore - Current directory: $(pwd)" 30 100 20 q "Quit gExplore" m "Toggle More options On/Off" "${choices[@]}"  2> /tmp/choice.txt
     fi
@@ -45,14 +49,17 @@ display_files() {
 
     # Handle the choice
     if [[ "$choice" == "m" ]]; then
-        update_global_flag
+        toggle_more_options
     elif [[ "$choice" == "q" ]]; then
         clear
-        echo exited gExplore
         echo Last location opened in gexplore: $(pwd)
-        exit 0
+        LAST_DIR=$(pwd)
+        KEEP_EXPLORING=false
     elif [[ "$choice" == "a" ]]; then
         dialog --msgbox "gExplore v2.0\nGitHub Link: https://github.com/gandhardate/gexplore\nBy Gandhar Date" 10 70
+    elif [[ "$choice" == "h" ]]; then
+        dialog --msgbox "gExplore v2.0 help\nLaunch gexplore anywhere\n 1. Navigate between directories\n 2. Toggle switch for more options\n " 10 70
+   
     elif [[ -d "$choice" ]]; then
         cd "$choice"
     elif [[ -f "$choice" ]]; then
@@ -72,7 +79,8 @@ display_files() {
 }
 
 # Main loop
-while true; do
+while $KEEP_EXPLORING; do
     display_files
 done
+echo exited gexplore
 
